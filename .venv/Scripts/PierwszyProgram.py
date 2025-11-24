@@ -18,7 +18,7 @@ STALA =33333
 
 
 # GŁÓWNE USTAWIENIA PROGRAMU
-ip=f"192.168.5.144" #Target IOLM device IP
+ip=f"192.168.5.151" #Target IOLM device IP
 ex_path = r"C:\Users\plsokopa\PycharmProjects\PythonProject"
 logInterval = 5 # Main loop interval - for http data request and logging [s]
 AUTHORIZATION=False     # In case of using Solution Block set TRUE
