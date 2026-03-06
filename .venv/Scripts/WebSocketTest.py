@@ -26,7 +26,7 @@ def open_ws(ip, port=80, path="/websocket", user=None, password=None, timeout=3)
 
 def main():
     ap = argparse.ArgumentParser(description="Sprawdź ile dostępnych połączeń WebSocket ma jeszcze ifm AL1402 (IoT Core).")
-    ap.add_argument("--ip",default="192.168.5.131",  help="Adres IP AL1402 (np. 192.168.0.55)")
+    ap.add_argument("--ip",default="192.168.5.111",  help="Adres IP AL1402 (np. 192.168.0.55)")
     ap.add_argument("--port", type=int, default=80, help="Port HTTP (domyślnie 80)")
     ap.add_argument("--path", default="/getidentity", help="Ścieżka WebSocket (domyślnie /websocket)")
     ap.add_argument("--max", type=int, default=8, help="Górny limit prób (dla IoT Core typowo 8)")

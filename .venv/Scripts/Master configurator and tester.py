@@ -12,18 +12,24 @@ from openpyxl import Workbook, load_workbook
 import paho.mqtt.client as mqtt
 #from KURS import STALA
 STALA =33333
-
-
-
+packets_ok=0
+packets_send=0
+packets_error=0
+test_interval=600.0
+test_time=0.0
+test_start_time=0
+http_post_interval=1.0
+post_start_time=0.0
+post_time=0.0
 
 
 # GŁÓWNE USTAWIENIA PROGRAMU
 ip=f"192.168.5.151" #Target IOLM device IP
 ex_path = r"C:\Users\plsokopa\PycharmProjects\PythonProject"
-logInterval = 5 # Main loop interval - for http data request and logging [s]
+logInterval = 0.1# Main loop interval - for http data request and logging [s]
 AUTHORIZATION=False     # In case of using Solution Block set TRUE
-T1_INTERVAL=2000    # Timer 1 interval for notifications
-
+T1_INTERVAL=500    # Timer 1 interval for notifications MQTT
+T2_INTERVAL=300    # Timer 1 interval for notifications HTTP
 # MQTT BROKER DATA - for example mosquitto
 BROKER = "192.168.5.10"  # BROKER ip
 PORT = 1883
@@ -92,6 +98,18 @@ GetPortReadAcyclic={"Port1ReadAcyclic":{"code": "request","cid": 1,"adr": "/ioli
                     "Port6ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[6]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}},
                     "Port7ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[7]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}},
                     "Port8ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[8]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}}}
+# -----------------------------------Get mirrored data---------------------------------------------------
+MIROR_DEVICE_IP_1="http://192.168.0.141:80"
+MIRROR_ALIAS_1="IOLM_1402"
+MIRROR_ADR_1=f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}"
+GetMirroredPdin={"MirrorPdin1":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[1]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin2":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[2]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin3":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[3]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin4":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[4]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin5":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[5]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin6":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[6]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin7":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[7]/iolinkdevice/pdin/getdata"},
+         "MirrorPdin8":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[8]/iolinkdevice/pdin/getdata"}}
 
 # -----------------------------------Command channel configuration---------------------------------------------------
 
@@ -109,6 +127,7 @@ CmdConfig={ "Timer1Interval":{"code": "request","cid": 1,"adr": "/timer[1]/inter
             "CmdSetRepTopic":{"code": "request", "cid": 5,"adr": "/connections/mqttConnection/mqttCmdChannel/mqttCmdChannelSetup/defaultReplyTopic/setdata","data": {"newvalue": CMD_REPLY_TOPIC}},
             "MqttStart":{"code": "request", "cid": 1, "adr": "/connections/mqttConnection/status/start"}}
 CmdConfigSB={ "Timer1Interval":{"code": "request","cid": 1,"adr": "/timer[1]/interval/setdata","data": {"newvalue": T1_INTERVAL}},
+            "Timer2Interval":{"code": "request","cid": 1,"adr": "/timer[2]/interval/setdata","data": {"newvalue": T2_INTERVAL}},
             "CmdStart":{"code": "request", "cid": 1, "adr": "/connections/mqttcommandchannel/status/start"},
             "CmdSetIp":{"code": "request", "cid": 2,"adr": "/connections/mqttcommandchannel/mqttcmdchannel/mqttcmdchannelsetup/brokerip/setdata","data": {"newvalue": BROKER_IP}},
             "CmdSetPort":{"code": "request", "cid": 3,"adr": "/connections/mqttcommandchannel/mqttcmdchannel/mqttcmdchannelsetup/brokerport/setdata","data": {"newvalue": BROKER_PORT}},
@@ -132,12 +151,19 @@ FieldBusConfig={"fbSetIp":{"code":10,"cid":2,"adr":"/fieldbussetup/network/ipadd
 
 # -----------------------------------IOT configuration-------------------------------------------------------
 
-IOT_IP=f"192.168.5.131"
+IOT_IP=f"192.168.5.156"
 IOT_SUBNET_MASK="255.255.255.0"
-IOT_DEFAULT_GATEWAY="192.168.5.250"
+IOT_DEFAULT_GATEWAY="192.168.5.10"
+IOT_DEFAULT_DNS=""
 IotConfig={"iotSetIp":{"code":"request","cid":2,"adr":"/iotsetup/network/ipaddress/setdata","data":{"newvalue":IOT_IP}},
             "iotSetSubnetMask":{"code": "request","cid": 1,"adr": "/iotsetup/network/subnetmask/setdata","data": {"newvalue": IOT_SUBNET_MASK}},
             "iotSetDefaultGateway":{"code": "request","cid": 1,"adr": "/iotsetup/network/ipdefaultgateway/setdata","data": {"newvalue": IOT_DEFAULT_GATEWAY}}}
+IotConfigSB={"iotSetBlock":{"code":"request","cid":2,"adr":"/network/br0/ipv4/address0/setblock/setdata","data":{
+        "datatoset": {
+        "address": IOT_IP,
+        "subnetmask": IOT_SUBNET_MASK,
+        "mode": "1"
+        }}}, "iotSetDefaultGateway":{"code": "request","cid": 1,"adr": "/network/br0/ipv4/gateway/setdata","data": {"newvalue": IOT_DEFAULT_GATEWAY}}}
 
 # ----------------------------Iolink master confiigurtatiom------------------------------------
 
@@ -153,9 +179,9 @@ PORT_2_MODE=portMode.IOLINK
 PORT_3_MODE=portMode.IOLINK
 PORT_4_MODE=portMode.IOLINK
 PORT_5_MODE=portMode.IOLINK
-PORT_6_MODE=portMode.DISABLE
-PORT_7_MODE=portMode.DISABLE
-PORT_8_MODE=portMode.DISABLE
+PORT_6_MODE=portMode.IOLINK
+PORT_7_MODE=portMode.IOLINK
+PORT_8_MODE=portMode.IOLINK
 PortModeConfig={"port1SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[1]/mode/setdata","data": {"newvalue": PORT_1_MODE.value}},
                 "port2SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[2]/mode/setdata","data": {"newvalue": PORT_2_MODE.value}},
                 "port3SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[3]/mode/setdata","data": {"newvalue": PORT_3_MODE.value}},
@@ -164,38 +190,109 @@ PortModeConfig={"port1SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster
                 "port6SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[6]/mode/setdata","data": {"newvalue": PORT_6_MODE.value}},
                 "port7SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[7]/mode/setdata","data": {"newvalue": PORT_7_MODE.value}},
                 "port8SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[8]/mode/setdata","data": {"newvalue": PORT_8_MODE.value}}}
+
+
+MirrorConfig={"AddMirror":{"code": "request","cid": 1,"adr": "ifm-AL1590-000252500027/device_management/mirror","data": {"uri": MIROR_DEVICE_IP_1,"alias": MIRROR_ALIAS_1,"persist": True}},
+              "MirroDeviceList":{"code": "request", "cid": 1, "adr":"ifm-AL1590-000252500027/device_management/getdevicelist"}}
+
+
+
+
+
+# ----------------------------MQTT subscriptions------------------------------------
+
+SUBS_BROKER_ADRESS_TLS="mqtt://192.168.5.10:1883"
+SUBS_BROKER_ADRESS_NO_TLS="mqtts://192.168.5.10:8883"
 Subscribtions={
 "subscribeData1":{
   "code":"request",
   "cid":4711,
   "adr":"/timer[1]/counter/datachanged/subscribe",
-  "data":{"callback":"mqtt://192.168.5.10:1883/MqttAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1",
+  "data":{"callback":f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt1",
     "datatosend":["/iolinkmaster/port[1]/iolinkdevice/pdin","/processdatamaster/temperature"]
   }},
 "subscribeData2":{
   "code":"request",
   "cid":4711,
   "adr":"/timer[1]/counter/datachanged/subscribe",
-  "data":{"callback":"mqtt://192.168.5.10:1883/MqttAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+  "data":{"callback":f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt2",
     "datatosend":["/iolinkmaster/port[2]/iolinkdevice/pdin","/processdatamaster/temperature"]
   }},
 "subscribeData3":{
   "code":"request",
   "cid":4711,
   "adr":"/timer[1]/counter/datachanged/subscribe",
-  "data":{"callback":"mqtt://192.168.5.10:1883/MqttAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3",
+  "data":{"callback":f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt3",
     "datatosend":["/iolinkmaster/port[3]/iolinkdevice/pdin","/processdatamaster/temperature"]
   }},
 "subscribeData4":{
   "code":"request",
   "cid":4711,
   "adr":"/timer[1]/counter/datachanged/subscribe",
-  "data":{"callback":"mqtt://192.168.5.10:1883/MqttAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4",
+  "data":{"callback":f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt4",
     "datatosend":["/iolinkmaster/port[4]/iolinkdevice/pdin","/processdatamaster/temperature"]
   }}
 }
+s_interval=500
+n_interval=500
+SubscribtionsSB1={
+"subscribeData1":{"code":10,"cid":1,"adr":"/monitor/add","data": {"recipient":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin12","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin"],
+                                                 "sample_interval":s_interval,"notify_interval":n_interval,"data_changed":False,"persist":True}},
+"subscribeData2":{"code":10,"cid":1,"adr":"/monitor/add","data": {"recipient":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin34","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin"],
+                                                 "sample_interval":s_interval,"notify_interval":n_interval,"data_changed":False,"persist":True}},
+"subscribeData3":{"code":10,"cid":1,"adr":"/monitor/add","data": {"recipient":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin56","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"],
+                                                 "sample_interval":s_interval,"notify_interval":n_interval,"data_changed":False,"persist":True}},
+"subscribeData4":{"code":10,"cid":1,"adr":"/monitor/add","data": {"recipient":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin78","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],
+                                                 "sample_interval":s_interval,"notify_interval":n_interval,"data_changed":False,"persist":True}}
+}
+SubscribtionsSB2={
+"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin12","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}},
+"subscribeData2":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin34","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin"],"subscribeid":1,"persist":True}},
+"subscribeData3":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin56","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"],"subscribeid":2,"persist":True}},
+"subscribeData4":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin78","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],"subscribeid":3,"persist":True}}
+}
+#MQTTs
+SubscribtionsSB3={
+"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/pdin12","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}},
+"subscribeData2":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/pdin34","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin"],"subscribeid":1,"persist":True}},
+"subscribeData3":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/pdin56","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"],"subscribeid":2,"persist":True}},
+"subscribeData4":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/pdin78","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],"subscribeid":3,"persist":True}}
+}
+
+SubscribtionsSB4={"HiveMq1":{
+ "code":"request","cid":2,"adr":"/monitor/add","data":{"recipient":"mqtts://zdenek.cech:pivopivo123@plz-2503-uns.magna.global:8883/m/plz/tls/183","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin" ],"sample_interval":500,
+ "notify_interval":1000,"data_changed":False,"persist":True }
+}}
+SubscribtionsSB5={
+"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/pdinAL","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"
+"ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}}}
+
+SubscribtionsSB_HTTP={
+"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[2]/counter/datachanged/subscribe","data": {"callbackurl":"http://192.168.5.10:80/HTTP8","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"
+"ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}}}
+
+SubscribtionsSB_HTTP_NODE_RED={
+"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[2]/counter/datachanged/subscribe","data": {"callbackurl":"http://127.0.0.1:1880/http8","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
+"ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[3]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[4]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[5]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[6]/iolinkdevice/pdin"
+"ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}}}
+
+SubscribtionsSB_MQTTs_REMOTE={"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data":
+{"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/MirrorTlsPort","datatosend":[f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[1]/iolinkdevice/pdin",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[2]/iolinkdevice/pdin",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[3]/iolinkdevice/pdin"
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[4]/iolinkdevice/pdin"],"subscribeid":11,"persist":True}}}
+
 # Subscription  check
-SUBSCRIPTION_TOPIC="mqtt://192.168.5.10:1883/MqttAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4" # Existing subscription topic
+SUBSCRIPTION_TOPIC=f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt4" # Existing subscription topic
 SUBSCRIPTION_ADR="/timer[1]/counter/datachanged/getsubscriptioninfo"                                                       # Existing subscription adress
 GetSubscribeExist={"subscribeCheck":{"code":"request","cid":4711,"adr":SUBSCRIPTION_ADR,"data":{"callback":SUBSCRIPTION_TOPIC}}}
 
@@ -267,10 +364,18 @@ def pingTest(ip):
 
 def httpPost(ip,data):
     url = f"http://{ip}"
+    global packets_send,packets_ok,packets_error
     if AUTHORIZATION:
         data['auth'] = AUTH
-    r = requests.post(url, data=json.dumps(data), verify=False)
+    packets_send=packets_send+1
+    #time.sleep(http_post_interval)
+    r = requests.post(url, data=json.dumps(data), verify=False,timeout=100)
     status = r.status_code
+    if status==200:
+        packets_ok=packets_ok+1;
+    else:
+        packets_error=packets_error+1
+        print("Request error:",status)
     return r.json()
 
 def dictIteamCounter(data):
@@ -286,9 +391,14 @@ def dictIteamCounter(data):
 def post(data):
     i = 0
     logData = [0] * len(data)
+    elapsed_time = [0.0] * 20
+    ti=0
     if dictIteamCounter(data)>6:        # Check if it is single reqest or multipule request
         for key, path in data.items():  # Multiplle request code:
+            start_time = time.time()
             dataX=httpPost(ip,path)
+            elapsed_time[ti] = time.time() - start_time
+            ti = ti + 1
             try:
                 if 'value' in dataX['data']:                # search "value" key
                     logData[i]=dataX['data'].get('value')   # copy value from dict to loggig data list
@@ -301,19 +411,26 @@ def post(data):
                 print("JASON data: ",key, dataX)            # Exceptation
                 i += 1
 
-    else:                                                   # Single request code part
-        dataX = httpPost(ip, data)
+    else:
+        # Single request code part
+        path=data
+        start_time = time.time()
+        print("Single request:", path)
+        dataX = httpPost(ip, path)
+        elapsed_time[ti] = time.time() - start_time
+        ti=ti+1
         try:
             if 'value' in dataX['data']:
                 logData[i] = dataX['data'].get('value')
                 i += 1
-                print(data, dataX['data'].get('value'))
+                #print(data, dataX['data'].get('value'))
             else:
-                print("JASON data: ",data,"response",dataX)
+                #print("JASON data: ",data,"response",dataX)
                 i += 1
         except:
             print("JASON data: ",data,"response",dataX)
             i += 1
+    #print("Single read time:", elapsed_time)
     return logData
 
 #'YWRtaW4=', 'cGFzc3dvcmQ='
@@ -321,19 +438,22 @@ def post(data):
 postDone=True
 # ---------------------------------------Declare get data HERE:-------------------------------------------------
 # Initializing GetData also creates an array of column names of the appropriate size used to create Excell file
-GetData = GetProductData | GetAdvancedData | GetPdin | GetPortDeviceProductName | GetPortEvent |GetIolinkEvent  # Add required "Get" dictrionary for HTTP REQUEST
+#GetData = GetProductData | GetAdvancedData | GetPdin | GetPortDeviceProductName | GetPortEvent |GetIolinkEvent  # Add required "Get" dictrionary for HTTP REQUEST
 #GetProductData | GetAdvancedData | GetMqttData | GetSubscribeExist | GetPdin | GetProcesParameters | GetPortDeviceProductName | GetPortEvent |GetIolinkEvent| GetPortReadAcyclic
-
+GetData = GetPdin|GetMirroredPdin
 #GetData=GetAdvancedData| GetMqttData | GetSubscribeExist | GetPdin
 keyList = [0] * (len(GetData)+3)
 
 start2 = 1
-while True:
 
+test_start_time=time.time()
 
+while test_time<test_interval:
+
+    test_time=time.time()-test_start_time
     if start2:  #pingTest(ip)
         i=0
-        print(STALA)
+
         if postDone :                       # CONFIGURATION CODE PART
             #post(FieldBusConfig)           # Use this command type to set multi request type
             #post(IotConfig)                # Use this command type to set multi request type
@@ -342,26 +462,43 @@ while True:
             #post(CmdConfig)                # Use this command type to set multi request type
             #post(CmdConfigSB)               # use this command to set Solution block command channel
             #post(Subscribtions)
+            #post(SubscribtionsSB3)
+            #post(SubscribtionsSB_HTTP)
+            post(SubscribtionsSB_MQTTs_REMOTE)
+            #post(CmdConfigSB["Timer2Interval"])
+            #post(CmdConfigSB["Timer1Interval"])
+
             postDone=False
-            mqttClientConfig()
+            #mqttClientConfig()
+            #post(IotConfigSB)
             ix=0
+            print("Configuration ready")
             for key in GetData:             # Key list for logging initializing
                 keyList[ix+2] = str(key)
                 ix += 1
         # HTTP GET DATA AND LOGGING CODE PART:
-        getValue=post(GetData)              # GET DATA command - You can use total dict GetData, or individual GetProductData or GetMqttData with changing GetData declaration
-        #print(keyList)
-        #print(getValue)
-        log_error(keyList,getValue)   #Excell file data logging
-        time.sleep(logInterval)     # Main loop interval
+        post_time=time.time()-post_start_time
+        #print(post_time)
+        if post_time>http_post_interval:
+            post_start_time = time.time()
+            #print("HTTO post timer:",post_time)
+
+            start_time = time.time()
+            getValue=post(GetData)              # GET DATA command - You can use total dict GetData, or individual GetProductData or GetMqttData with changing GetData declaration
+            elapsed_time = time.time() - start_time
+
+        #log_error(keyList,getValue)   #Excell file data logging
+        #time.sleep(logInterval)     # Main loop interval
         # MQTT CLIENT :
-        client.publish(PUB_TOPIC, "Hello MQTT!")                         # MQTT publishing test
-        client.publish(CMD_TOPIC, json.dumps(GetProcesParameters['Voltage']))    # MQTT Command channel request via MQTT
-        client.loop_read()
+        #client.publish(PUB_TOPIC, "Hello MQTT!")                         # MQTT publishing test
+        #client.publish(CMD_TOPIC, json.dumps(GetProcesParameters['Voltage']))    # MQTT Command channel request via MQTT
+        #client.loop_read()
 
 
     else:
         print(f"[DEBUG] Ping error.")
+
+print("MQTT interval :",T1_INTERVAL,"HTTP interval:",http_post_interval,"HTTP request time=",elapsed_time,"Packets send", packets_send, "Packets ok:", packets_ok, "Packets error:",packets_error, "Calculated packets:" ,test_interval/http_post_interval*8, "Missing packets:", test_interval/http_post_interval*8-packets_ok)
 
 
 

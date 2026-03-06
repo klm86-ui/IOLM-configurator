@@ -160,10 +160,11 @@ def mirror_test():
 BlobConf()
 time.sleep(1)
 if __name__ == "__main__":
-    blob_test()
-    for x in range(30000):
+    #blob_test()
+    dx=2
+    for x in range(600):
         http_test()
-        mirror_test()
+        #mirror_test()
         #time.sleep(1)
 
     print(f" Http test result : sent: {http_sent}, recived: {http_recived}, errors: {http_error}")
