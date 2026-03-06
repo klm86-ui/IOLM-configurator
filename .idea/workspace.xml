@@ -5,10 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d19f9395-30b5-458a-ac1e-5bf2322de3e9" name="Changes" comment="Kurs9">
+      <change afterPath="$PROJECT_DIR$/.venv/Scripts/Http request analizer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.venv/Scripts/BLOB analizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/.venv/Scripts/BLOB analizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.venv/Scripts/Master configurator and tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/.venv/Scripts/Master configurator and tester.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.venv/Scripts/WebSocketTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/.venv/Scripts/WebSocketTest.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,35 +49,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.BLOB analizer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.BalluffRestApi.executor&quot;: &quot;Run&quot;,
-    &quot;Python.BalluffTcpIpSocketTest.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Http request analizer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Http_Subscribe_Packets_Counter.executor&quot;: &quot;Run&quot;,
-    &quot;Python.KURS.executor&quot;: &quot;Run&quot;,
-    &quot;Python.MQTTs_Client.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Master configurator and tester.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ModbusTcp_FC43_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.PierwszyProgram.executor&quot;: &quot;Run&quot;,
-    &quot;Python.PqsTcpSocketCounter.executor&quot;: &quot;Run&quot;,
-    &quot;Python.SocketCounter.executor&quot;: &quot;Run&quot;,
-    &quot;Python.SocketTest_2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.WebSocketTest.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Praca/Wiedza/Programy - python/GitHub&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.CommitDialog&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.BLOB analizer.executor": "Run",
+    "Python.BalluffRestApi.executor": "Run",
+    "Python.BalluffTcpIpSocketTest.executor": "Run",
+    "Python.Http request analizer.executor": "Run",
+    "Python.Http_Subscribe_Packets_Counter.executor": "Run",
+    "Python.KURS.executor": "Run",
+    "Python.MQTTs_Client.executor": "Run",
+    "Python.Master configurator and tester.executor": "Run",
+    "Python.ModbusTcp_FC43_test.executor": "Run",
+    "Python.PierwszyProgram.executor": "Run",
+    "Python.PqsTcpSocketCounter.executor": "Run",
+    "Python.SocketCounter.executor": "Run",
+    "Python.SocketTest_2.executor": "Run",
+    "Python.WebSocketTest.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Praca/Wiedza/Programy - python/GitHub",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;ChangesTree.GroupingKeys&quot;: [
-      &quot;directory&quot;
+  "keyToStringList": {
+    "ChangesTree.GroupingKeys": [
+      "directory"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\plsokopa\PycharmProjects\PythonProject1\.venv\Scripts" />
@@ -189,7 +187,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765522784207</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Kurs9">
+      <option name="closed" value="true" />
+      <created>1772795258231</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772795258231</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Kurs9">
+      <option name="closed" value="true" />
+      <created>1772795361146</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1772795361146</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

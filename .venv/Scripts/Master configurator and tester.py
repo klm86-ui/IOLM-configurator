@@ -245,7 +245,7 @@ SubscribtionsSB1={
 "subscribeData4":{"code":10,"cid":1,"adr":"/monitor/add","data": {"recipient":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin78","data_points":["ifm-AL1590-000252500027/iolinkmaster/port[7]/iolinkdevice/pdin","ifm-AL1590-000252500027/iolinkmaster/port[8]/iolinkdevice/pdin"],
                                                  "sample_interval":s_interval,"notify_interval":n_interval,"data_changed":False,"persist":True}}
 }
-xcs=7
+xcs=79
 SubscribtionsSB2={
 "subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data": {"callbackurl":f"{SUBS_BROKER_ADRESS_NO_TLS}/pdin12","datatosend":["ifm-AL1590-000252500027/iolinkmaster/port[1]/iolinkdevice/pdin",
 "ifm-AL1590-000252500027/iolinkmaster/port[2]/iolinkdevice/pdin"],"subscribeid":0,"persist":True}},
