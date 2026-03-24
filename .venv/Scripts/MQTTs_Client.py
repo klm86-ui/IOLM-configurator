@@ -25,7 +25,7 @@ TOPIC13 = "MirrorTlsPort"
 TOPIC14 = "NodeRed_Counter_1"
 TOPIC15 = "Node_Red_Bridge"
 
-start_time=0
+start_time=1
 elapsed_time=0
 subscriptionCounter=0
 notification_interval=0

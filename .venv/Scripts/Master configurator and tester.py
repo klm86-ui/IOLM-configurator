@@ -100,7 +100,7 @@ GetPortReadAcyclic={"Port1ReadAcyclic":{"code": "request","cid": 1,"adr": "/ioli
                     "Port8ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[8]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}}}
 # -----------------------------------Get mirrored data---------------------------------------------------
 MIROR_DEVICE_IP_1="http://192.168.5.41"
-MIROR_DEVICE_IP_2="http://192.168.5.43"
+MIROR_DEVICE_IP_2="http://192.168.5.46"
 MIRROR_ALIAS_1="IOLM_4102"
 MIRROR_ALIAS_2="IOLM_4043"
 MIRROR_ADR_1=f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}"
