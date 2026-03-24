@@ -27,7 +27,7 @@ post_time=0.0
 ip=f"192.168.5.151" #Target IOLM device IP
 ex_path = r"C:\Users\plsokopa\PycharmProjects\PythonProject"
 logInterval = 0.1# Main loop interval - for http data request and logging [s]
-AUTHORIZATION=False     # In case of using Solution Block set TRUE
+AUTHORIZATION=True     # In case of using Solution Block set TRUE
 T1_INTERVAL=500    # Timer 1 interval for notifications MQTT
 T2_INTERVAL=300    # Timer 1 interval for notifications HTTP
 # MQTT BROKER DATA - for example mosquitto
@@ -99,8 +99,10 @@ GetPortReadAcyclic={"Port1ReadAcyclic":{"code": "request","cid": 1,"adr": "/ioli
                     "Port7ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[7]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}},
                     "Port8ReadAcyclic":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[8]/iolinkdevice/iolreadacyclic","data": {"index": INDEX,"subindex": SUBINDEX}}}
 # -----------------------------------Get mirrored data---------------------------------------------------
-MIROR_DEVICE_IP_1="http://192.168.0.141:80"
-MIRROR_ALIAS_1="IOLM_1402"
+MIROR_DEVICE_IP_1="http://192.168.5.41"
+MIROR_DEVICE_IP_2="http://192.168.5.42"
+MIRROR_ALIAS_1="IOLM_4102"
+MIRROR_ALIAS_2="IOLM_4043"
 MIRROR_ADR_1=f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}"
 GetMirroredPdin={"MirrorPdin1":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[1]/iolinkdevice/pdin/getdata"},
          "MirrorPdin2":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[2]/iolinkdevice/pdin/getdata"},
@@ -110,6 +112,16 @@ GetMirroredPdin={"MirrorPdin1":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/
          "MirrorPdin6":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[6]/iolinkdevice/pdin/getdata"},
          "MirrorPdin7":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[7]/iolinkdevice/pdin/getdata"},
          "MirrorPdin8":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/iolinkmaster/port[8]/iolinkdevice/pdin/getdata"}}
+
+GetMirroredCounter={"MirrorCounter1":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[1]/maincounter_value/getdata"},
+         "MirrorCounter2":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[2]/maincounter_value/getdata"},
+         "MirrorCounter3":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[3]/maincounter_value/getdata"},
+         "MirrorCounter4":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[4]/maincounter_value/getdata"},
+         "MirrorCounter5":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[5]/maincounter_value/getdata"},
+         "MirrorCounter6":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[6]/maincounter_value/getdata"},
+         "MirrorCounter7":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[7]/maincounter_value/getdata"},
+         "MirrorCounter8":{"code":"request","cid":1,"adr":f"{MIRROR_ADR_1}/io/counter[8]/maincounter_value/getdata"}}
+
 
 # -----------------------------------Command channel configuration---------------------------------------------------
 
@@ -192,17 +204,18 @@ PortModeConfig={"port1SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster
                 "port8SetMode":{"code": "request","cid": 1,"adr": "/iolinkmaster/port[8]/mode/setdata","data": {"newvalue": PORT_8_MODE.value}}}
 
 
+
 MirrorConfig={"AddMirror":{"code": "request","cid": 1,"adr": "ifm-AL1590-000252500027/device_management/mirror","data": {"uri": MIROR_DEVICE_IP_1,"alias": MIRROR_ALIAS_1,"persist": True}},
               "MirroDeviceList":{"code": "request", "cid": 1, "adr":"ifm-AL1590-000252500027/device_management/getdevicelist"}}
-
-
+MirrorConfig2={"AddMirror":{"code": "request","cid": 1,"adr": "ifm-AL1590-000252500027/device_management/mirror","data": {"uri": MIROR_DEVICE_IP_2,"alias": MIRROR_ALIAS_2,"persist": True}},
+              "MirroDeviceList":{"code": "request", "cid": 1, "adr":"ifm-AL1590-000252500027/device_management/getdevicelist"}}
 
 
 
 # ----------------------------MQTT subscriptions------------------------------------
 
-SUBS_BROKER_ADRESS_TLS="mqtt://192.168.5.10:1883"
-SUBS_BROKER_ADRESS_NO_TLS="mqtts://192.168.5.10:8883"
+SUBS_BROKER_ADRESS_TLS="mqtts://192.168.5.10:8883"
+SUBS_BROKER_ADRESS_NO_TLS="mqtt://192.168.5.10:1883"
 Subscribtions={
 "subscribeData1":{
   "code":"request",
@@ -292,6 +305,16 @@ SubscribtionsSB_MQTTs_REMOTE={"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1
 f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[2]/iolinkdevice/pdin",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[3]/iolinkdevice/pdin"
 f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/iolinkmaster/port[4]/iolinkdevice/pdin"],"subscribeid":11,"persist":True}}}
 
+SubscribtionsSB_MQTTs_REMOTE_AL4102={"subscribeData1":{"code":10,"cid":1,"adr":"ifm-AL1590-000252500027/timer[1]/counter/datachanged/subscribe","data":
+{"callbackurl":f"{SUBS_BROKER_ADRESS_TLS}/MirrorTlsPort","datatosend":[f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[1]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[2]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[3]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[4]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[5]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[6]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[7]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_1}/io/counter[8]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[1]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[2]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[3]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[4]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[5]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[6]/maincounter_value",f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[7]/maincounter_value",
+f"ifm-AL1590-000252500027/remote/{MIRROR_ALIAS_2}/io/counter[8]/maincounter_value"],"subscribeid":11,"persist":True}}}
 # Subscription  check
 SUBSCRIPTION_TOPIC=f"{SUBS_BROKER_ADRESS_NO_TLS}/Mqtt4" # Existing subscription topic
 SUBSCRIPTION_ADR="/timer[1]/counter/datachanged/getsubscriptioninfo"                                                       # Existing subscription adress
@@ -441,7 +464,7 @@ postDone=True
 # Initializing GetData also creates an array of column names of the appropriate size used to create Excell file
 #GetData = GetProductData | GetAdvancedData | GetPdin | GetPortDeviceProductName | GetPortEvent |GetIolinkEvent  # Add required "Get" dictrionary for HTTP REQUEST
 #GetProductData | GetAdvancedData | GetMqttData | GetSubscribeExist | GetPdin | GetProcesParameters | GetPortDeviceProductName | GetPortEvent |GetIolinkEvent| GetPortReadAcyclic
-GetData = GetPdin|GetMirroredPdin
+GetData = GetPdin|GetMirroredCounter
 #GetData=GetAdvancedData| GetMqttData | GetSubscribeExist | GetPdin
 keyList = [0] * (len(GetData)+3)
 
@@ -465,10 +488,11 @@ while test_time<test_interval:
             #post(Subscribtions)
             #post(SubscribtionsSB3)
             #post(SubscribtionsSB_HTTP)
-            post(SubscribtionsSB_MQTTs_REMOTE)
+            #post(SubscribtionsSB_MQTTs_REMOTE_AL4102)
             #post(CmdConfigSB["Timer2Interval"])
             #post(CmdConfigSB["Timer1Interval"])
-
+            #post(MirrorConfig)
+            #post(MirrorConfig2)
             postDone=False
             #mqttClientConfig()
             #post(IotConfigSB)

@@ -1,12 +1,13 @@
 import paho.mqtt.client as mqtt
 import time
 import sys
+import json
 BROKER_HOST = "192.168.5.10"
 BROKER_PORT = 8883  # typowy port TLS
 
-CA_CERT = "certs/ca.crt"
-CLIENT_CERT = "certs/Klient.crt"
-CLIENT_KEY = "certs/ClientKey.pem"
+CA_CERT = "certs/CA.crt"
+CLIENT_CERT = "certs/MqttExplorer.crt"
+CLIENT_KEY = "certs/MqttExplorerKey.pem"
 
 TOPIC1 = "pdin12"
 TOPIC2 = "pdin34"
@@ -21,6 +22,8 @@ TOPIC10 = "balluff/iolink/devices/master1port6/databytes/fromdevice"
 TOPIC11 = "balluff/iolink/devices/master1port7/databytes/fromdevice"
 TOPIC12 = "balluff/iolink/devices/master1port8/databytes/fromdevice"
 TOPIC13 = "MirrorTlsPort"
+TOPIC14 = "NodeRed_Counter_1"
+TOPIC15 = "Node_Red_Bridge"
 
 start_time=0
 elapsed_time=0
@@ -42,8 +45,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(TOPIC11)
     client.subscribe(TOPIC12)
     client.subscribe(TOPIC13)
-
-
+    client.subscribe(TOPIC14)
+    client.subscribe(TOPIC15)
 
 def on_message(client, userdata, msg):
 
@@ -60,8 +63,27 @@ def on_message(client, userdata, msg):
         sys.exit("Zakończono program")
 
     subscriptionCounter=subscriptionCounter+1
-    print("Elapsed time:",elapsed_time,"Notification timer:",notification_interval,f"  Odebrano: {msg.topic} -> {msg.payload.decode()}")
+    data = json.loads(msg.payload.decode())
+    counterNumber=0
+    try:
+        for itm,value in data['data']['payload'].items():
+            try:
+               # print(f"Counter {counterNumber} value:",value['data'],"|  Time stamp:", value['timestamp'])
+                counterNumber = counterNumber + 1
+            except:
+                print(data['data']['payload'])
 
+    except:
+        # print(data['data']['payload'])
+        print(data)
+
+    #print(f"  Odebrano: {msg.topic} -> {msg.payload.decode()}")
+    try:
+        print("Elapsed time1:",elapsed_time,"Notification timer:",notification_interval,f"  DATA: {data['data']}")
+        print("---")
+    except:
+        print("Elapsed time2:", elapsed_time, "Notification timer:", notification_interval, f"  DATA: {data}")
+    msgx=msg.payload.decode()
 
 client = mqtt.Client()
 
